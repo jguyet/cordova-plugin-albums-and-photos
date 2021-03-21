@@ -1,0 +1,39 @@
+{
+  "name": "cordova-plugin-albums-and-photos",
+  "version": "1.0.0",
+  "description": "This Cordova plugin provides access to photo library on device.",
+  "cordova": {
+    "id": "cordova-plugin-albums-and-photos",
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jguyet/cordova-plugin-albums-and-photos"
+  },
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-android",
+    "cordova-ios",
+    "photo-library",
+    "photo-album",
+    "photo-collection",
+    "photo-asset",
+    "thumbnail",
+    "albums"
+  ],
+  "autor": "Jeremy Guyet <jguyet.weoohh@gmail.com>",
+  "license": "MIT",
+  "engines": [
+    {
+      "name": "cordova",
+      "version": ">=10.0.0"
+    }
+  ],
+  "bugs": {
+    "url": "https://github.com/jguyet/cordova-plugin-albums-and-photos/issues"
+  },
+  "homepage": "https://github.com/jguyet/cordova-plugin-albums-and-photos#README"
+}
