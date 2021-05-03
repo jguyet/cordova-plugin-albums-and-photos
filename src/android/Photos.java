@@ -1,10 +1,12 @@
 package com.domax.cordova;
 
 import android.Manifest;
+import android.content.ContentResolver;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.graphics.Matrix;
@@ -309,7 +311,11 @@ public class Photos extends CordovaPlugin {
 		int size = options != null ? options.optInt(P_SIZE, DEF_SIZE) : DEF_SIZE;
 		int quality = options != null ? options.optInt(P_QUALITY, DEF_QUALITY) : DEF_QUALITY;
 		boolean asDataUrl = options != null && options.optBoolean(P_AS_DATAURL);
-		int orientation = options != null ? options.optInt(P_ORI, DEF_ORI) : DEF_ORI;
+
+		if (size >= 2000) {
+			this.imageGreat(photoId, options, callbackContext);
+			return ;
+		}
 		try {
 			if (photoId == null || photoId.isEmpty() || "null".equalsIgnoreCase(photoId))
 				throw new IllegalArgumentException(E_PHOTO_ID_UNDEF);
@@ -323,6 +329,8 @@ public class Photos extends CordovaPlugin {
 
 			final ByteArrayOutputStream osThumb = new ByteArrayOutputStream();
 
+			int orientation = options != null && options.has(P_ORI) ? options.optInt(P_ORI, DEF_ORI) : getRotationFromMediaStore(cordova.getActivity().getContentResolver(), photoId);
+
 			Matrix matrix = new Matrix();
 			matrix.postRotate(orientation);
 			Bitmap scaledBitmap = Bitmap.createScaledBitmap(thumb, thumbW, thumbH, true);
@@ -332,6 +340,55 @@ public class Photos extends CordovaPlugin {
 
 			if (!asDataUrl) callbackContext.success(osThumb.toByteArray());
 			else callbackContext.success(T_DATA_URL + Base64.encodeToString(osThumb.toByteArray(), Base64.NO_WRAP));
+		} catch (Exception e) {
+			Log.e(TAG, e.getMessage(), e);
+			callbackContext.error(e.getMessage());
+		}
+	}
+
+	public static int getRotationFromMediaStore(ContentResolver resolver, String photoId) {
+		Uri imageUri = Uri.withAppendedPath(EXTERNAL_CONTENT_URI, photoId);
+		String[] columns = {MediaStore.Images.Media.DATA, MediaStore.Images.Media.ORIENTATION};
+		Cursor cursor = resolver.query(imageUri, columns, null, null, null);
+		if (cursor == null) return 0;
+
+		cursor.moveToFirst();
+
+		int orientationColumnIndex = cursor.getColumnIndex(columns[1]);
+		return cursor.getInt(orientationColumnIndex);
+	}
+
+	private void imageGreat(final String photoId, final JSONObject options, final CallbackContext callbackContext) {
+		int size = options != null ? options.optInt(P_SIZE, DEF_SIZE) : DEF_SIZE;
+		int quality = options != null ? options.optInt(P_QUALITY, DEF_QUALITY) : DEF_QUALITY;
+		boolean asDataUrl = options != null && options.optBoolean(P_AS_DATAURL);
+
+		try {
+			if (photoId == null || photoId.isEmpty() || "null".equalsIgnoreCase(photoId))
+				throw new IllegalArgumentException(E_PHOTO_ID_UNDEF);
+			final Bitmap image = getBitmap(
+					cordova.getActivity().getContentResolver(),
+					Uri.withAppendedPath(EXTERNAL_CONTENT_URI, photoId));
+			if (image == null) throw new IllegalStateException(E_PHOTO_ID_WRONG);
+			final ByteArrayOutputStream osImage = new ByteArrayOutputStream();
+
+			double ratio = (double) size / (image.getWidth() >= image.getHeight() ? image.getWidth() : image.getHeight());
+			int thumbW = (int) Math.round(image.getWidth() * ratio);
+			int thumbH = (int) Math.round(image.getHeight() * ratio);
+
+			int orientation = options != null && options.has(P_ORI) ? options.optInt(P_ORI, DEF_ORI) : getRotationFromMediaStore(cordova.getActivity().getContentResolver(), photoId);
+
+			Matrix matrix = new Matrix();
+			matrix.postRotate(orientation);
+			Bitmap scaledBitmap = Bitmap.createScaledBitmap(image, thumbW, thumbH, true);
+			Bitmap rotatedBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix, true);
+
+			rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, quality, osImage);
+
+			if (!asDataUrl) callbackContext.success(osImage.toByteArray());
+			else callbackContext.success(T_DATA_URL + Base64.encodeToString(osImage.toByteArray(), Base64.NO_WRAP));
+
+			callbackContext.success(osImage.toByteArray());
 		} catch (Exception e) {
 			Log.e(TAG, e.getMessage(), e);
 			callbackContext.error(e.getMessage());
