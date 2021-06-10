@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-albums-and-photos",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "This Cordova plugin provides access to photo library on device.",
   "cordova": {
     "id": "cordova-plugin-albums-and-photos",

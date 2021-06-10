@@ -10,5 +10,8 @@
 - (void) thumbnail:(CDVInvokedUrlCommand*)command;
 - (void) image:(CDVInvokedUrlCommand*)command;
 - (void) cancel:(CDVInvokedUrlCommand*)command;
+// RIGHT
+- (void) getPhotoLibraryAuthorization:(CDVInvokedUrlCommand*)command;
+- (void) requestPhotoLibraryAuthorization:(CDVInvokedUrlCommand*)command;
 
 @end

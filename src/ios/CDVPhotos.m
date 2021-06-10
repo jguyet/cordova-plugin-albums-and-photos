@@ -311,6 +311,58 @@ NSString* const S_SORT_TYPE = @"creationDate";
     }];
 }
 
+- (NSString*) getPhotoLibraryAuthorizationStatus
+{
+    PHAuthorizationStatus authStatus = [PHPhotoLibrary authorizationStatus];
+    return [self getPhotoLibraryAuthorizationStatusAsString:authStatus];
+
+}
+
+- (NSString*) getPhotoLibraryAuthorizationStatusAsString: (PHAuthorizationStatus)authStatus
+{
+    NSString* status;
+    if (authStatus == PHAuthorizationStatusDenied || authStatus == PHAuthorizationStatusRestricted){
+        status = @"AUTHORIZATION_DENIED";
+    } else if(authStatus == PHAuthorizationStatusNotDetermined ){
+        status = @"AUTHORIZATION_NOT_DETERMINED";
+    } else if(authStatus == PHAuthorizationStatusAuthorized){
+        status = @"AUTHORIZATION_GRANTED";
+    }
+    return status;
+}
+
+//GET RIGHT
+- (void) getPhotoLibraryAuthorization: (CDVInvokedUrlCommand*)command
+{
+    CDVPhotos* __weak weakSelf = self;
+    [self.commandDelegate runInBackground:^{
+        @try {
+            NSString* status = [self getPhotoLibraryAuthorizationStatus];
+            [weakSelf success:command withMessage:status];
+        }
+        @catch (NSException *exception) {
+            [weakSelf failure:command withMessage:@"Bad Error NSException"];
+        }
+    }];
+}
+
+//REQUEST RIGHT
+- (void) requestPhotoLibraryAuthorization: (CDVInvokedUrlCommand*)command
+{
+    CDVPhotos* __weak weakSelf = self;
+    [self.commandDelegate runInBackground:^{
+        @try {
+            [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus authStatus) {
+                NSString* status = [self getPhotoLibraryAuthorizationStatusAsString:authStatus];
+                [weakSelf success:command withMessage:status];
+            }];
+        }
+        @catch (NSException *exception) {
+            [weakSelf failure:command withMessage:@"Bad Error NSException"];
+        }
+    }];
+}
+
 - (BOOL) isNull:(id)obj {
     return obj == nil || [[NSNull null] isEqual:obj];
 }

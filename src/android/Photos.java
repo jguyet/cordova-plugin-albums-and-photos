@@ -457,4 +457,12 @@ public class Photos extends CordovaPlugin {
 			result.add((T) array.opt(i));
 		return result;
 	}
+
+	private void getPhotoLibraryAuthorization(final CallbackContext callbackContext) {
+		callbackContext.success();
+	}
+
+	private void requestPhotoLibraryAuthorization(final CallbackContext callbackContext) {
+		callbackContext.success();
+	}
 }

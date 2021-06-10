@@ -54,7 +54,15 @@ var Photos = {
 
 	cancel: function () {
 		exec(null, null, "Photos", "cancel", []);
-	}
+	},
+
+	getPhotoLibraryAuthorization: function (successCallback, errorCallback) {
+		exec(successCallback, errorCallback, "Photos", "getPhotoLibraryAuthorization", []);
+	},
+
+	requestPhotoLibraryAuthorization: function (successCallback, errorCallback) {
+		exec(successCallback, errorCallback, "Photos", "requestPhotoLibraryAuthorization", []);
+	},
 };
 
 module.exports = Photos;
